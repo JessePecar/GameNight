@@ -2,19 +2,20 @@
 using GameNight.API.Utilities.Interfaces;
 using GameNight.Lobby.Hubs;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace GameNight.API
 {
     public class Startup
     {
-        public Startup(WebApplicationBuilder? builder)
+        public IConfiguration Configuration { get; }
+        public Startup(IConfiguration configuration)
         {
-            AddServices(builder.Services);
-
-            ConfigureApp(builder.Build());
+            Configuration = configuration;
         }
 
-        private void AddServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -22,34 +23,43 @@ namespace GameNight.API
             services.AddSwaggerGen();
 
 
+            services.AddMemoryCache();
             services.AddSingleton<ILobbyKeyGenerator, LobbyKeyGenerator>();
 
-            services.AddMemoryCache();
-
+            services.Configure<KestrelServerOptions>(Configuration.GetSection("Kestral"));
+            
             services.AddSignalR();
+
+            services.AddCors(options =>
+            {
+                CorsPolicyBuilder builder = new CorsPolicyBuilder();
+                builder.AllowAnyOrigin();
+                builder.AllowAnyMethod();
+                builder.AllowAnyHeader();
+                options.AddDefaultPolicy(builder.Build());
+            });
         }
 
-        private void ConfigureApp(WebApplication app)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (app.Environment.IsDevelopment())
+            if (env.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            app.UseCors();
+
+            app.UseRouting();
 
             app.UseAuthorization();
 
-            app.MapControllers();
-
-            app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapControllers();
                 endpoints.MapHub<LobbyHub>("/lobby");
             });
 
-            app.Run();
         }
     }
 }

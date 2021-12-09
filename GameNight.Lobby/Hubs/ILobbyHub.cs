@@ -8,5 +8,6 @@
         Task RoundStart();
         Task PlayersTurn();
         Task SendDetails(object details);
+        Task SubmitToJudge(object submission);
     }
 }

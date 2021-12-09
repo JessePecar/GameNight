@@ -32,7 +32,13 @@ namespace GameNight.Lobby.Hubs
                 return Clients.Caller.InvalidGameRequest();
             }
 
+            Groups.AddToGroupAsync(Context.ConnectionId, lobbyKey);
             return Clients.Caller.GameJoinedSuccessfully();
+        }
+        
+        public Task LeaveGame(string lobbyKey)
+        {
+            return Groups.RemoveFromGroupAsync(Context.ConnectionId, lobbyKey);
         }
 
         public Task StartGame(string lobbyKey, Guid adminKey)
@@ -71,7 +77,7 @@ namespace GameNight.Lobby.Hubs
 
         public Task SendPlayersDetails(string lobbyKey, object details)
         {
-            return Clients.Group(lobbyKey).SendDetails(details);
+            return Clients.OthersInGroup(lobbyKey).SendDetails(details);
         }
 
         public Task UpdateScore(string lobbyKey, string userName)
@@ -81,6 +87,17 @@ namespace GameNight.Lobby.Hubs
                 lobby.Players.FirstOrDefault(p => p.Name == userName).Score++;
                 _cache.Set(lobbyKey, lobby);
                 return NextTurn(lobbyKey);
+            }
+            return Clients.Caller.InvalidGameRequest();
+        }
+
+        public Task SubmitToJudge(string lobbyKey, object submission)
+        {
+            if (_cache.TryGetValue(lobbyKey, out Models.Models.Game.Lobby lobby))
+            {
+                string connection = lobby.Players.ElementAt(lobby.TurnNumber).ConnectionId;
+                
+                return Clients.Client(connection).SubmitToJudge(lobbyKey);
             }
             return Clients.Caller.InvalidGameRequest();
         }

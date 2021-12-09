@@ -3,6 +3,8 @@ using GameNight.Models.Enums;
 using GameNight.Models.Models.Game;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using System.Collections;
+using System.Reflection;
 
 namespace GameNight.API.Controllers
 {
@@ -61,18 +63,51 @@ namespace GameNight.API.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("AllLobbies")]
+        public IActionResult AllLobbies()
+        {
+            var value = _cache.GetType().GetProperty("EntriesCollection", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_cache);
+            var collection = value as ICollection;
+            var items = new List<string>();
+            if (collection != null)
+            {
+                foreach (var item in collection)
+                {
+                    var methodInfo = item.GetType().GetProperty("Key");
+                    var val = methodInfo.GetValue(item);
+                    items.Add(val.ToString());
+                }
+            }
+
+            var lobbies = new List<Models.Models.Game.Lobby>();
+            items.ForEach(i =>
+            {
+                lobbies.Add(_cache.Get<Models.Models.Game.Lobby>(i));
+            });
+            return Ok(lobbies);
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="lobbyKey"></param>
         /// <param name="adminKey"></param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpPost]
         [Route("CloseGame")]
-        public IActionResult CloseGame(string lobbyKey, Guid adminKey)
+        public IActionResult CloseGame([FromBody] GameManager gameManager)
         {
             try
             {
+                if(_cache.TryGetValue(gameManager.LobbyKey, out Models.Models.Game.Lobby lobby))
+                {
+                    if(lobby.AdminKey == gameManager.AdminKey)
+                    {
+                        _cache.Remove(gameManager.LobbyKey);
+                    }
+                }
+
                 return Ok();
             }
             catch (Exception ex)

@@ -29,15 +29,6 @@ namespace GameNight.API
             services.Configure<KestrelServerOptions>(Configuration.GetSection("Kestral"));
             
             services.AddSignalR();
-
-            services.AddCors(options =>
-            {
-                CorsPolicyBuilder builder = new CorsPolicyBuilder();
-                builder.AllowAnyOrigin();
-                builder.AllowAnyMethod();
-                builder.AllowAnyHeader();
-                options.AddDefaultPolicy(builder.Build());
-            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -48,16 +39,21 @@ namespace GameNight.API
                 app.UseSwaggerUI();
             }
 
-            app.UseCors();
+            app.UseCors(opt =>
+                opt
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+            );
 
+            //app.UseAuthorization();
+            
             app.UseRouting();
-
-            app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
                 endpoints.MapHub<LobbyHub>("/lobby");
+                
             });
 
         }

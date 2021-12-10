@@ -41,6 +41,7 @@ namespace GameNight.Lobby.Hubs
             return Groups.RemoveFromGroupAsync(Context.ConnectionId, lobbyKey);
         }
 
+        
         public Task StartGame(string lobbyKey, Guid adminKey)
         {
             if(IsAdminOfLobby(lobbyKey, adminKey, out var lobby))

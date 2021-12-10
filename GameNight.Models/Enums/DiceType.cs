@@ -3,6 +3,7 @@
     public enum DiceType
     {
         Coin = 2,
+        D3 = 3,
         D4 = 4,
         D6 = 6,
         D8 = 8,

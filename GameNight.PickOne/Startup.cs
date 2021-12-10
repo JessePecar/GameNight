@@ -25,6 +25,7 @@ namespace GameNight.API
 
             services.AddMemoryCache();
             services.AddSingleton<ILobbyKeyGenerator, LobbyKeyGenerator>();
+            services.AddSingleton<IDiceRoller, DiceRoller>();
 
             services.Configure<KestrelServerOptions>(Configuration.GetSection("Kestral"));
             
@@ -46,7 +47,7 @@ namespace GameNight.API
                 .AllowAnyMethod()
             );
 
-            //app.UseAuthorization();
+            app.UseAuthorization();
             
             app.UseRouting();
             app.UseEndpoints(endpoints =>

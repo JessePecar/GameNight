@@ -1,4 +1,6 @@
-﻿using GameNight.Models.Models.Game;
+﻿using GameNight.Models.CacheUtils;
+using GameNight.Models.Enums;
+using GameNight.Models.Models.Game;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -14,6 +16,7 @@ namespace GameNight.Lobby.Hubs
 
         public Task JoinGame(string lobbyKey, string password, string userName, Guid? adminKey = null)
         {
+            Games gameType;
             if (CanJoinLobby(lobbyKey, password, out Models.Models.Game.Lobby lobby))
             {
                 Player player = new Player
@@ -23,7 +26,21 @@ namespace GameNight.Lobby.Hubs
                     IsAdmin = adminKey != null && lobby.AdminKey == adminKey,
                     ConnectionId = Context.ConnectionId
                 };
-                lobby.Players.Add(player);
+
+                if(lobby.Players.Any(p => p.Name == userName))
+                {
+                    return Clients.Caller.InvalidGameRequest();
+                }
+
+                if(lobby.Players.Any(p => p.ConnectionId == Context.ConnectionId))
+                {
+                    lobby.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId).Name = userName;
+                }
+                else
+                {
+                    lobby.Players.Add(player);
+                }
+                gameType = lobby.GameType;
 
                 _cache.Set(lobbyKey, lobby);
             }
@@ -33,7 +50,7 @@ namespace GameNight.Lobby.Hubs
             }
 
             Groups.AddToGroupAsync(Context.ConnectionId, lobbyKey);
-            return Clients.Caller.GameJoinedSuccessfully();
+            return Clients.Caller.GameJoinedSuccessfully(gameType);
         }
         
         public Task LeaveGame(string lobbyKey)
@@ -41,7 +58,6 @@ namespace GameNight.Lobby.Hubs
             return Groups.RemoveFromGroupAsync(Context.ConnectionId, lobbyKey);
         }
 
-        
         public Task StartGame(string lobbyKey, Guid adminKey)
         {
             if(IsAdminOfLobby(lobbyKey, adminKey, out var lobby))
@@ -76,9 +92,9 @@ namespace GameNight.Lobby.Hubs
             return Clients.Caller.InvalidGameRequest();
         }
 
-        public Task SendPlayersDetails(string lobbyKey, object details)
+        public Task SendPlayersDetails(string lobbyKey, string user, object details)
         {
-            return Clients.OthersInGroup(lobbyKey).SendDetails(details);
+            return Clients.OthersInGroup(lobbyKey).SendDetails(user, details);
         }
 
         public Task UpdateScore(string lobbyKey, string userName)
@@ -101,6 +117,21 @@ namespace GameNight.Lobby.Hubs
                 return Clients.Client(connection).SubmitToJudge(lobbyKey);
             }
             return Clients.Caller.InvalidGameRequest();
+        }
+
+        public void LeaveAllGames()
+        {
+            string connId = Context.ConnectionId;
+            IEnumerable<Models.Models.Game.Lobby>? lobbies = _cache.GetAllCacheItems<Models.Models.Game.Lobby>();
+            List<Models.Models.Game.Lobby>? playerLobbies = lobbies.Where(l => l.Players.Any(p => p.ConnectionId == connId)).ToList();
+
+            Parallel.ForEach(playerLobbies, (pl) =>
+            {
+                pl.Players.RemoveAll(p => p.ConnectionId == connId);
+
+                _cache.Set(pl.LobbyKey, pl);
+            });
+
         }
 
         private bool CanJoinLobby(string lobbyKey, string password, out Models.Models.Game.Lobby lobby)

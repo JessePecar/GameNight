@@ -1,4 +1,5 @@
 ﻿using GameNight.API.Utilities.Interfaces;
+using GameNight.Models.CacheUtils;
 using GameNight.Models.Enums;
 using GameNight.Models.Models.Game;
 using Microsoft.AspNetCore.Mvc;
@@ -35,12 +36,14 @@ namespace GameNight.API.Controllers
                 GameManager gameManager = new GameManager
                 {
                     LobbyKey = _lobbyKey.GenerateLobbyKey(),
-                    AdminKey = Guid.NewGuid()
+                    AdminKey = Guid.NewGuid(),
+                    GameType = gameType
                 };
 
                 if(_cache.TryGetValue(gameManager.LobbyKey, out var game))
                 {
                     //Game exists, this should mean that you will need to get a new lobby key, but for now, I will end the current game and create a new one.
+                    //Could think of the idea of having a lobby key tracker that will prevent new keys from being created when one is active.
                     _cache.Remove(gameManager.LobbyKey);
                 }
 
@@ -63,33 +66,20 @@ namespace GameNight.API.Controllers
             }
         }
 
+        /// <summary>
+        /// This will be a locked down controller eventually that will only be accessible to admins of the GameNight suite
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [Route("AllLobbies")]
         public IActionResult AllLobbies()
         {
-            var value = _cache.GetType().GetProperty("EntriesCollection", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_cache);
-            var collection = value as ICollection;
-            var items = new List<string>();
-            if (collection != null)
-            {
-                foreach (var item in collection)
-                {
-                    var methodInfo = item.GetType().GetProperty("Key");
-                    var val = methodInfo.GetValue(item);
-                    items.Add(val.ToString());
-                }
-            }
-
-            var lobbies = new List<Models.Models.Game.Lobby>();
-            items.ForEach(i =>
-            {
-                lobbies.Add(_cache.Get<Models.Models.Game.Lobby>(i));
-            });
+            var lobbies = _cache.GetAllCacheItems<Models.Models.Game.Lobby>();
             return Ok(lobbies);
         }
 
         /// <summary>
-        /// 
+        /// Close the game with the specific game code and admin key that was given when the game was created.
         /// </summary>
         /// <param name="lobbyKey"></param>
         /// <param name="adminKey"></param>

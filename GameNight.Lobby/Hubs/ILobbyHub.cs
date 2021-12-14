@@ -1,13 +1,15 @@
-﻿namespace GameNight.Lobby.Hubs
+﻿using GameNight.Models.Enums;
+
+namespace GameNight.Lobby.Hubs
 {
     public interface ILobbyHub
     {
         Task InvalidGameRequest();
-        Task GameJoinedSuccessfully();
+        Task GameJoinedSuccessfully(Games gameType);
         Task GameStart();
         Task RoundStart();
         Task PlayersTurn();
-        Task SendDetails(object details);
+        Task SendDetails(string user, object details);
         Task SubmitToJudge(object submission);
     }
 }

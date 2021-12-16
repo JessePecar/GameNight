@@ -14,7 +14,7 @@ namespace GameNight.Lobby.Hubs
             _cache = cache;
         }
 
-        public Task JoinGame(string lobbyKey, string password, string userName, Guid? adminKey = null)
+        public Task JoinGame(string lobbyKey, string password, string userName, Guid deviceKey, Guid? adminKey = null)
         {
             Games gameType;
             if (CanJoinLobby(lobbyKey, password, out Models.Models.Game.Lobby lobby))
@@ -22,19 +22,20 @@ namespace GameNight.Lobby.Hubs
                 Player player = new Player
                 {
                     Name = userName,
-                    Id = Guid.NewGuid(),
+                    Id = deviceKey,
                     IsAdmin = adminKey != null && lobby.AdminKey == adminKey,
                     ConnectionId = Context.ConnectionId
                 };
 
-                if(lobby.Players.Any(p => p.Name == userName))
+                if(lobby.Players.Any(p => p.Id == deviceKey))
                 {
-                    return Clients.Caller.InvalidGameRequest();
-                }
+                    //Remove the devices previous connections, change the players name to the sent in name
+                    Parallel.ForEach(lobby.Players.Where(p => p.Id == deviceKey), async (ply) =>
+                    {
+                        await Groups.RemoveFromGroupAsync(ply.ConnectionId, lobbyKey);
+                    });
 
-                if(lobby.Players.Any(p => p.ConnectionId == Context.ConnectionId))
-                {
-                    lobby.Players.FirstOrDefault(p => p.ConnectionId == Context.ConnectionId).Name = userName;
+                    lobby.Players.FirstOrDefault(p => p.Id == deviceKey).Name = userName;
                 }
                 else
                 {
@@ -53,8 +54,12 @@ namespace GameNight.Lobby.Hubs
             return Clients.Caller.GameJoinedSuccessfully((int)gameType);
         }
         
-        public Task LeaveGame(string lobbyKey)
+        public Task LeaveGame(string lobbyKey, Guid deviceKey)
         {
+            var lobby = _cache.Get<Models.Models.Game.Lobby>(lobbyKey);
+            lobby.Players.RemoveAll(p => p.Id == deviceKey);
+            _cache.Set(lobbyKey, lobby);
+
             return Groups.RemoveFromGroupAsync(Context.ConnectionId, lobbyKey);
         }
 

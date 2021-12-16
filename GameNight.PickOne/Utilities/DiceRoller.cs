@@ -17,7 +17,7 @@ namespace GameNight.API.Utilities
 
             for (int dice = 0; dice < numberOfDice; dice++)
             {
-                rolledDice.Add(_random.Next(1, (int)diceType));
+                rolledDice.Add(_random.Next(1, (int)diceType + 1));
             }
 
             return rolledDice;

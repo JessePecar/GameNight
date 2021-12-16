@@ -97,9 +97,9 @@ namespace GameNight.Lobby.Hubs
             return Clients.Caller.InvalidGameRequest();
         }
 
-        public Task SendPlayersDetails(string lobbyKey, string user, object details)
+        public Task SendPlayersDetails(string lobbyKey, string user, Guid deviceKey, object details)
         {
-            return Clients.OthersInGroup(lobbyKey).SendDetails(user, details);
+            return Clients.OthersInGroup(lobbyKey).SendDetails(user, deviceKey, details);
         }
 
         public Task UpdateScore(string lobbyKey, string userName)

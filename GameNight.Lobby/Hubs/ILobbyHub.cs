@@ -9,7 +9,7 @@ namespace GameNight.Lobby.Hubs
         Task GameStart();
         Task RoundStart();
         Task PlayersTurn();
-        Task SendDetails(string user, object details);
+        Task SendDetails(string user, Guid deviceKey, object details);
         Task SubmitToJudge(object submission);
     }
 }

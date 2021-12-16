@@ -50,7 +50,7 @@ namespace GameNight.Lobby.Hubs
             }
 
             Groups.AddToGroupAsync(Context.ConnectionId, lobbyKey);
-            return Clients.Caller.GameJoinedSuccessfully(gameType);
+            return Clients.Caller.GameJoinedSuccessfully((int)gameType);
         }
         
         public Task LeaveGame(string lobbyKey)

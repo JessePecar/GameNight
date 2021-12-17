@@ -35,7 +35,7 @@ namespace GameNight.API.Controllers
             {
                 if(!Request.Headers.TryGetValue("DeviceKey", out var deviceKey))
                 {
-                    return BadRequest("Unable to get the device key");
+                    return StatusCode(500, "Unable to get the device key");
                 }
 
                 GameManager gameManager = new GameManager

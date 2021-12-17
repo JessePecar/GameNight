@@ -4,6 +4,7 @@ using GameNight.Models.Enums;
 using GameNight.Models.Models.Game;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 using System.Collections;
 using System.Reflection;
 
@@ -31,9 +32,10 @@ namespace GameNight.API.Controllers
         [Route("InitializeNewGame")]
         public IActionResult InitializeNewGame(Games gameType = Games.ChooseOne)
         {
+            StringValues deviceKey = "";
             try
             {
-                if(!Request.Headers.TryGetValue("DeviceKey", out var deviceKey))
+                if(!Request.Headers.TryGetValue("DeviceKey", out deviceKey))
                 {
                     return StatusCode(500, "Unable to get the device key");
                 }
@@ -41,7 +43,7 @@ namespace GameNight.API.Controllers
                 GameManager gameManager = new GameManager
                 {
                     LobbyKey = _lobbyKey.GenerateLobbyKey(),
-                    AdminKey = Guid.Parse("DeviceKey"),
+                    AdminKey = Guid.Parse(deviceKey.ToString()),
                     GameType = gameType
                 };
 
@@ -66,7 +68,7 @@ namespace GameNight.API.Controllers
             }
             catch(Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, $"{deviceKey} {Environment.NewLine} {ex.Message}");
             }
         }
 

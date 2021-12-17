@@ -14,16 +14,16 @@ namespace GameNight.Lobby.Hubs
             _cache = cache;
         }
 
-        public Task JoinGame(string lobbyKey, string password, string userName, Guid deviceKey, Guid? adminKey = null)
+        public Task JoinGame(string lobbyKey, string userName, Guid deviceKey)
         {
             Games gameType;
-            if (CanJoinLobby(lobbyKey, password, out Models.Models.Game.Lobby lobby))
+            if (CanJoinLobby(lobbyKey, out Models.Models.Game.Lobby lobby))
             {
                 Player player = new Player
                 {
                     Name = userName,
                     Id = deviceKey,
-                    IsAdmin = adminKey != null && lobby.AdminKey == adminKey,
+                    IsAdmin = lobby.AdminKey == deviceKey,
                     ConnectionId = Context.ConnectionId
                 };
 
@@ -139,9 +139,9 @@ namespace GameNight.Lobby.Hubs
 
         }
 
-        private bool CanJoinLobby(string lobbyKey, string password, out Models.Models.Game.Lobby lobby)
+        private bool CanJoinLobby(string lobbyKey, out Models.Models.Game.Lobby lobby)
         {
-            return _cache.TryGetValue(lobbyKey, out lobby) && lobby != null && lobby.Password.Equals(password);
+            return _cache.TryGetValue(lobbyKey, out lobby) && lobby != null;
         }
 
         private bool IsAdminOfLobby(string lobbyKey, Guid adminKey, out Models.Models.Game.Lobby lobby)

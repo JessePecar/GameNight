@@ -29,14 +29,19 @@ namespace GameNight.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("InitializeNewGame")]
-        public IActionResult InitializeNewGame(string password = "", Games gameType = Games.ChooseOne)
+        public IActionResult InitializeNewGame(Games gameType = Games.ChooseOne)
         {
             try
             {
+                if(!Request.Headers.TryGetValue("DeviceKey", out var deviceKey))
+                {
+                    return BadRequest("Unable to get the device key");
+                }
+
                 GameManager gameManager = new GameManager
                 {
                     LobbyKey = _lobbyKey.GenerateLobbyKey(),
-                    AdminKey = Guid.NewGuid(),
+                    AdminKey = Guid.Parse("DeviceKey"),
                     GameType = gameType
                 };
 
@@ -51,7 +56,6 @@ namespace GameNight.API.Controllers
                 {
                     AdminKey = gameManager.AdminKey,
                     LobbyKey = gameManager.LobbyKey,
-                    Password = password,
                     GameType = gameType,
                     Players = new List<Player>()
                 };

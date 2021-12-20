@@ -17,9 +17,10 @@ namespace GameNight.Lobby.Hubs
         public Task JoinGame(string lobbyKey, string userName, Guid deviceKey)
         {
             Games gameType;
+            Player player = new Player();
             if (CanJoinLobby(lobbyKey, out Models.Models.Game.Lobby lobby))
             {
-                Player player = new Player
+                player = new Player
                 {
                     Name = userName,
                     Id = deviceKey,
@@ -51,6 +52,7 @@ namespace GameNight.Lobby.Hubs
             }
 
             Groups.AddToGroupAsync(Context.ConnectionId, lobbyKey);
+            Clients.OthersInGroup(lobbyKey).PlayerJoined(player);
             return Clients.Caller.GameJoinedSuccessfully((int)gameType);
         }
         

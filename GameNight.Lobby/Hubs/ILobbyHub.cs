@@ -11,5 +11,6 @@ namespace GameNight.Lobby.Hubs
         Task PlayersTurn();
         Task SendDetails(string user, Guid deviceKey, object details);
         Task SubmitToJudge(object submission);
+        Task PlayerJoined(object player);
     }
 }

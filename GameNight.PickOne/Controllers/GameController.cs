@@ -111,5 +111,24 @@ namespace GameNight.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet]
+        [Route("LobbyInformation")]
+        public IActionResult LobbyInformation(string lobbyKey)
+        {
+            try
+            {
+                if(_cache.TryGetValue<Models.Models.Game.Lobby>(lobbyKey, out var lobby))
+                {
+                    lobby.AdminKey = new Guid();
+                    return Ok(lobby);
+                }
+                return BadRequest("Lobby code does not exist");
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

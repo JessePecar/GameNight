@@ -7,5 +7,6 @@
         public bool IsAdmin { get; set; }
         public int Score { get; set; }
         public string ConnectionId { get; set; }
+        public int PlayerNumber { get; set; }
     }
 }

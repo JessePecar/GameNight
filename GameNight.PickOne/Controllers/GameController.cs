@@ -120,7 +120,6 @@ namespace GameNight.API.Controllers
             {
                 if(_cache.TryGetValue<Models.Models.Game.Lobby>(lobbyKey, out var lobby))
                 {
-                    lobby.AdminKey = new Guid();
                     return Ok(lobby);
                 }
                 return BadRequest("Lobby code does not exist");

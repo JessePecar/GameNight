@@ -28,7 +28,7 @@ namespace GameNight.Lobby.Hubs
                     ConnectionId = Context.ConnectionId
                 };
 
-                if(lobby.Players.Any(p => p.Id == deviceKey))
+                if (lobby.Players.Any(p => p.Id == deviceKey))
                 {
                     //Remove the devices previous connections, change the players name to the sent in name
                     Parallel.ForEach(lobby.Players.Where(p => p.Id == deviceKey), async (ply) =>
@@ -55,7 +55,7 @@ namespace GameNight.Lobby.Hubs
             Clients.OthersInGroup(lobbyKey).PlayerJoined(player);
             return Clients.Caller.GameJoinedSuccessfully((int)gameType);
         }
-        
+
         public Task LeaveGame(string lobbyKey, Guid deviceKey)
         {
             var lobby = _cache.Get<Models.Models.Game.Lobby>(lobbyKey);
@@ -70,13 +70,9 @@ namespace GameNight.Lobby.Hubs
             return Clients.Group(lobbyKey).PlayerToggleReadyUp(deviceKey, isReady);
         }
 
-        public Task StartGame(string lobbyKey, Guid adminKey)
+        public Task StartGame(string lobbyKey)
         {
-            if(IsAdminOfLobby(lobbyKey, adminKey, out var lobby))
-            {
-                return Clients.Group(lobbyKey).GameStart();
-            }
-            return Clients.Caller.InvalidGameRequest();
+            return Clients.Group(lobbyKey).GameStart();
         }
 
         public Task StartRound(string lobbyKey, Guid adminKey)
@@ -93,11 +89,11 @@ namespace GameNight.Lobby.Hubs
 
         public Task NextTurn(string lobbyKey)
         {
-            if(_cache.TryGetValue(lobbyKey, out Models.Models.Game.Lobby lobby))
+            if (_cache.TryGetValue(lobbyKey, out Models.Models.Game.Lobby lobby))
             {
                 if (lobby.Players.Count == lobby.TurnNumber + 1) lobby.TurnNumber = 0;
                 else lobby.TurnNumber += 1;
-                
+
                 _cache.Set(lobbyKey, lobby);
                 return SendPlayerTurnStart(lobby.Players.ElementAt(lobby.TurnNumber).ConnectionId);
             }
@@ -125,7 +121,7 @@ namespace GameNight.Lobby.Hubs
             if (_cache.TryGetValue(lobbyKey, out Models.Models.Game.Lobby lobby))
             {
                 string connection = lobby.Players.ElementAt(lobby.TurnNumber).ConnectionId;
-                
+
                 return Clients.Client(connection).SubmitToJudge(lobbyKey);
             }
             return Clients.Caller.InvalidGameRequest();
@@ -160,6 +156,6 @@ namespace GameNight.Lobby.Hubs
         {
             return Clients.Client(connectionId).PlayersTurn();
         }
-        
+
     }
 }

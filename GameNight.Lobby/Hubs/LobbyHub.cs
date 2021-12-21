@@ -65,6 +65,11 @@ namespace GameNight.Lobby.Hubs
             return Groups.RemoveFromGroupAsync(Context.ConnectionId, lobbyKey);
         }
 
+        public Task ReadyUpToggle(string lobbyKey, Guid deviceKey, bool isReady)
+        {
+            return Clients.Group(lobbyKey).PlayerToggleReadyUp(deviceKey, isReady);
+        }
+
         public Task StartGame(string lobbyKey, Guid adminKey)
         {
             if(IsAdminOfLobby(lobbyKey, adminKey, out var lobby))

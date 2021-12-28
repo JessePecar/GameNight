@@ -19,12 +19,8 @@ jobs:
   deploy:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    env: 
-      Auth_Token: 644061bb-d9da-428a-a3b5-3d6a07aae0b6
+  
     steps:
-      - name: EchoJobId
-        run: |
-          echo "Github Job Id: $GITHUB_JOB"
       - name: RemoteDeploy
         run: Invoke-WebRequest http://utility.jessepecar.com/api/Deploy/DeployRepoV2?name=GameNight -Headers @{'Authorization' = '$Auth_Token';}  
         shell: pwsh

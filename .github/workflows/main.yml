@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: EchoJobId
-        run: echo ${{ env.GITHUB_JOB }}
+        run: echo "$GITHUB_JOB"
       - name: RemoteDeploy
-        run: Invoke-WebRequest http://utility.jessepecar.com/api/Deploy/DeployRepoV2?name=GameNight -Headers @{'Authorization' = '${{ env.Auth_Token }}';}  
+        run: Invoke-WebRequest http://utility.jessepecar.com/api/Deploy/DeployRepoV2?name=GameNight -Headers @{'Authorization' = '$Auth_Token';}  
         shell: pwsh

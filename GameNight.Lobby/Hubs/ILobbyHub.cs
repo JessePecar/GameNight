@@ -1,8 +1,9 @@
-﻿using GameNight.Models.Enums;
+﻿using GameNight.Lobby.Hubs.InterfaceHubs;
+using GameNight.Models.Enums;
 
 namespace GameNight.Lobby.Hubs
 {
-    public interface ILobbyHub
+    public interface ILobbyHub : IChooseOneHub, IPregameLobby
     {
         Task InvalidGameRequest();
         Task GameJoinedSuccessfully(int gameType);
@@ -11,7 +12,6 @@ namespace GameNight.Lobby.Hubs
         Task PlayersTurn();
         Task SendDetails(string user, Guid deviceKey, object details);
         Task SubmitToJudge(object submission);
-        Task PlayerJoined(object player);
-        Task PlayerToggleReadyUp(Guid deviceKey, bool isReady);
+        
     }
 }

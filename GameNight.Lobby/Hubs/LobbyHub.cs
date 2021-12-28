@@ -9,6 +9,7 @@ namespace GameNight.Lobby.Hubs
     public class LobbyHub : Hub<ILobbyHub>
     {
         private readonly IMemoryCache _cache;
+
         public LobbyHub(IMemoryCache cache)
         {
             _cache = cache;
@@ -156,6 +157,5 @@ namespace GameNight.Lobby.Hubs
         {
             return Clients.Client(connectionId).PlayersTurn();
         }
-
     }
 }

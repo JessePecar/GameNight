@@ -9,9 +9,17 @@ namespace GameNight.API.Controllers
 
         [HttpGet]
         [Route("Prompt")]
-        public IActionResult Prompt()
+        public async Task<IActionResult> Prompt()
         {
-            return Ok("Pickles");
+            var client = new HttpClient();
+
+            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://random-word-api.herokuapp.com/word?number=5&swear=0"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                return Ok(await response.Content.ReadAsStringAsync());
+            }
+            return StatusCode(500, "Unable to get prompt :(");
         }
     }
 }

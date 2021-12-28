@@ -22,5 +22,6 @@ jobs:
   
     steps:
       - name: RemoteDeploy
-        run: Invoke-WebRequest http://utility.jessepecar.com/api/Deploy/DeployRepoV2?name=GameNight -Headers @{'Authorization' = '$Auth_Token';}  
+        run: |
+          Invoke-WebRequest http://utility.jessepecar.com/api/Deploy/DeployRepoV2?name=GameNight -Headers @{'Authorization' = '$Auth_Token';}  
         shell: pwsh
